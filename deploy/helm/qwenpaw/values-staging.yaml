@@ -1,0 +1,12 @@
+image:
+  tag: staging
+
+ingress:
+  enabled: true
+  host: qwenpaw-staging.example.com
+
+env:
+  QWENPAW_STORAGE_BACKEND: postgres
+  QWENPAW_AUTH_ENABLED: "true"
+
+existingSecret: qwenpaw-staging-secret

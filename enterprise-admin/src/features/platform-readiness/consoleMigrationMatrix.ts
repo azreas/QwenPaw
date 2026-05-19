@@ -1,0 +1,290 @@
+export type ConsoleMigrationDecision =
+  | "replace"
+  | "rebuild"
+  | "replace-and-rebuild"
+  | "supervise"
+  | "remove"
+  | "not-admin"
+  | "staged"
+
+export interface ConsoleMigrationItem {
+  consoleRoute: (typeof CONSOLE_MANAGEMENT_ROUTES)[number]
+  enterpriseMeaning: string
+  targetModule: string
+  migrationDecision: ConsoleMigrationDecision
+  backendContract: string
+  exitCriteria: string
+}
+
+export const CONSOLE_MANAGEMENT_ROUTES = [
+  "/chat",
+  "/inbox",
+  "/channels",
+  "/sessions",
+  "/cron-jobs",
+  "/heartbeat",
+  "/platform",
+  "/platform/policies",
+  "/platform/users",
+  "/wecom-tenants",
+  "/wecom-tenants/monitoring",
+  "/skills",
+  "/skill-pool",
+  "/tools",
+  "/mcp",
+  "/acp",
+  "/workspace",
+  "/agents",
+  "/agent-config",
+  "/models",
+  "/environments",
+  "/security",
+  "/token-usage",
+  "/agent-stats",
+  "/voice-transcription",
+  "/debug",
+  "/backups",
+  "/plugin-manager",
+  "dynamic-plugin-routes",
+] as const
+
+export const consoleMigrationMatrix: ConsoleMigrationItem[] = [
+  {
+    consoleRoute: "/chat",
+    enterpriseMeaning: "员工会话入口",
+    targetModule: "WebChat / 企微 Bot / 审计与追踪",
+    migrationDecision: "not-admin",
+    backendContract: "WebChat session、企微 Bot runtime、audit business calls",
+    exitCriteria: "员工聊天由 WebChat 和企微 Bot 承载，Admin 只提供会话审计与诊断",
+  },
+  {
+    consoleRoute: "/inbox",
+    enterpriseMeaning: "待处理事件和人工介入",
+    targetModule: "运营总览 / Bad Case / 诊断中心",
+    migrationDecision: "rebuild",
+    backendContract: "audit events、bad case、approval or inbox event APIs",
+    exitCriteria: "待办、异常和审批类事件可在 Admin 对应模块处理",
+  },
+  {
+    consoleRoute: "/channels",
+    enterpriseMeaning: "租户入口配置",
+    targetModule: "租户管理 / 入口配置",
+    migrationDecision: "rebuild",
+    backendContract: "tenant-local WeCom and WebChat channel config APIs",
+    exitCriteria: "企微、WebChat、回调、安全参数和诊断均可按租户配置",
+  },
+  {
+    consoleRoute: "/sessions",
+    enterpriseMeaning: "会话记录与上下文",
+    targetModule: "审计与追踪 / 租户详情",
+    migrationDecision: "supervise",
+    backendContract: "audit events、business calls、session correlation",
+    exitCriteria: "会话查询、业务调用和审计事件可关联 request、session 和 tenant",
+  },
+  {
+    consoleRoute: "/cron-jobs",
+    enterpriseMeaning: "租户自动化任务",
+    targetModule: "自动化任务 / 诊断中心",
+    migrationDecision: "staged",
+    backendContract: "tenant-scoped cron job APIs",
+    exitCriteria: "租户任务可查看、启停、审计；写契约未成熟时保持只读",
+  },
+  {
+    consoleRoute: "/heartbeat",
+    enterpriseMeaning: "心跳式自动化任务",
+    targetModule: "自动化任务 / 诊断中心",
+    migrationDecision: "staged",
+    backendContract: "tenant-scoped heartbeat job APIs",
+    exitCriteria: "心跳任务状态、失败原因和租户边界可见",
+  },
+  {
+    consoleRoute: "/platform",
+    enterpriseMeaning: "平台运营总览",
+    targetModule: "运营总览",
+    migrationDecision: "replace",
+    backendContract: "readiness、ops overview、evaluation summary",
+    exitCriteria: "Dashboard 覆盖租户状态、调用、失败、Bad Case、验收和健康摘要",
+  },
+  {
+    consoleRoute: "/platform/policies",
+    enterpriseMeaning: "平台策略与租户模板",
+    targetModule: "策略配置 / 租户管理",
+    migrationDecision: "rebuild",
+    backendContract: "PolicyService、tenant template APIs、audit events",
+    exitCriteria: "策略和模板有独立权限、审计和租户影响范围说明",
+  },
+  {
+    consoleRoute: "/platform/users",
+    enterpriseMeaning: "后台用户与租户绑定",
+    targetModule: "用户与权限",
+    migrationDecision: "replace",
+    backendContract: "/api/auth/users、AuthzService、permission matrix",
+    exitCriteria: "用户、角色、租户绑定和权限矩阵在 Admin 可完成",
+  },
+  {
+    consoleRoute: "/wecom-tenants",
+    enterpriseMeaning: "企微租户生命周期和配置",
+    targetModule: "租户管理 / 业务能力 / Bad Case / 验收测评",
+    migrationDecision: "replace-and-rebuild",
+    backendContract: "/api/config/channels/wecom_tenant/*、tenant-local config、audit",
+    exitCriteria: "租户创建、启停、详情、入口配置、能力配置、追踪和问题闭环均在 Admin 可完成",
+  },
+  {
+    consoleRoute: "/wecom-tenants/monitoring",
+    enterpriseMeaning: "租户监控与诊断",
+    targetModule: "指标监控 / 诊断中心 / 租户详情",
+    migrationDecision: "rebuild",
+    backendContract: "readiness、metrics summary、tenant diagnostics APIs",
+    exitCriteria: "全局监控摘要和单租户诊断均有 Admin 入口",
+  },
+  {
+    consoleRoute: "/skills",
+    enterpriseMeaning: "单 Agent Skill 配置",
+    targetModule: "能力治理 / 租户授权",
+    migrationDecision: "rebuild",
+    backendContract: "tenant skill APIs、capability catalog、audit events",
+    exitCriteria: "Skill 以企业能力目录和租户授权方式管理",
+  },
+  {
+    consoleRoute: "/skill-pool",
+    enterpriseMeaning: "Skill 资源池",
+    targetModule: "能力治理 / 能力目录",
+    migrationDecision: "rebuild",
+    backendContract: "skill registry、security scan、tenant authorization APIs",
+    exitCriteria: "Skill 安装、扫描、版本和授权有企业级目录模型",
+  },
+  {
+    consoleRoute: "/tools",
+    enterpriseMeaning: "工具配置",
+    targetModule: "能力治理 / Tools",
+    migrationDecision: "rebuild",
+    backendContract: "tool registry、tool guard、audit events",
+    exitCriteria: "Tools 纳入能力目录、租户授权、审计和安全扫描",
+  },
+  {
+    consoleRoute: "/mcp",
+    enterpriseMeaning: "MCP 服务配置",
+    targetModule: "能力治理 / MCP",
+    migrationDecision: "replace-and-rebuild",
+    backendContract: "tenant MCP APIs、MCP connection test、business call traces",
+    exitCriteria: "MCP 列表、配置、连接测试、启停和调用追踪在 Admin 闭环",
+  },
+  {
+    consoleRoute: "/acp",
+    enterpriseMeaning: "扩展协议能力",
+    targetModule: "能力治理 / 扩展治理",
+    migrationDecision: "staged",
+    backendContract: "extension registry and audit contracts",
+    exitCriteria: "能力边界明确，未成熟写操作保持只读或未开放态",
+  },
+  {
+    consoleRoute: "/workspace",
+    enterpriseMeaning: "本地工作区文件与状态",
+    targetModule: "租户详情 / 文件诊断 / 诊断中心",
+    migrationDecision: "supervise",
+    backendContract: "tenant workspace diagnostics APIs",
+    exitCriteria: "Admin 只暴露安全的只读诊断或受控操作，不提供任意文件管理",
+  },
+  {
+    consoleRoute: "/agents",
+    enterpriseMeaning: "Agent 列表",
+    targetModule: "Agent 模板 / 租户 Agent 配置",
+    migrationDecision: "rebuild",
+    backendContract: "agent template APIs、tenant agent config APIs",
+    exitCriteria: "个人 Agent 概念转为平台模板和租户配置",
+  },
+  {
+    consoleRoute: "/agent-config",
+    enterpriseMeaning: "Agent 运行配置",
+    targetModule: "Agent 模板 / 租户 Agent 配置",
+    migrationDecision: "rebuild",
+    backendContract: "tenant-local agent.json or managed tenant config APIs",
+    exitCriteria: "租户配置写入租户本地配置或受管存储，不写回根 profile",
+  },
+  {
+    consoleRoute: "/models",
+    enterpriseMeaning: "模型与 Provider",
+    targetModule: "模型治理 / 租户模型授权",
+    migrationDecision: "rebuild",
+    backendContract: "provider registry、model pool、tenant model routing APIs",
+    exitCriteria: "模型池、Provider、租户授权和路由策略可管理并审计",
+  },
+  {
+    consoleRoute: "/environments",
+    enterpriseMeaning: "运行环境配置",
+    targetModule: "系统设置 / 租户详情",
+    migrationDecision: "staged",
+    backendContract: "environment diagnostics and controlled settings APIs",
+    exitCriteria: "敏感配置默认只读；写操作需权限、确认和审计",
+  },
+  {
+    consoleRoute: "/security",
+    enterpriseMeaning: "安全扫描与策略",
+    targetModule: "安全中心",
+    migrationDecision: "staged",
+    backendContract: "security services、permission denial audit、scan results",
+    exitCriteria: "安全风险、策略、权限拒绝和处置流程有产品化页面",
+  },
+  {
+    consoleRoute: "/token-usage",
+    enterpriseMeaning: "Token 用量与成本",
+    targetModule: "配额管理 / 指标监控",
+    migrationDecision: "rebuild",
+    backendContract: "quota service、token usage metrics、audit events",
+    exitCriteria: "租户用量、成本、限额和超限处置可查看",
+  },
+  {
+    consoleRoute: "/agent-stats",
+    enterpriseMeaning: "Agent 统计",
+    targetModule: "运营总览 / 指标监控",
+    migrationDecision: "rebuild",
+    backendContract: "metrics summary、business calls、tenant aggregation",
+    exitCriteria: "指标按租户、入口、能力和时间聚合展示",
+  },
+  {
+    consoleRoute: "/voice-transcription",
+    enterpriseMeaning: "语音转写工具",
+    targetModule: "能力治理",
+    migrationDecision: "remove",
+    backendContract: "capability catalog when retained as enterprise ability",
+    exitCriteria: "如作为企业能力则进入能力目录，否则不作为后台管理入口",
+  },
+  {
+    consoleRoute: "/debug",
+    enterpriseMeaning: "开发调试",
+    targetModule: "诊断中心",
+    migrationDecision: "rebuild",
+    backendContract: "readiness、metrics、logs、tenant diagnostics",
+    exitCriteria: "诊断能力产品化为 readiness、metrics、日志、配置诊断和安全测试链路",
+  },
+  {
+    consoleRoute: "/backups",
+    enterpriseMeaning: "备份恢复",
+    targetModule: "备份恢复 / 系统设置",
+    migrationDecision: "staged",
+    backendContract: "backup production APIs、restore audit events",
+    exitCriteria: "备份状态、恢复演练和高风险操作有确认、权限和审计",
+  },
+  {
+    consoleRoute: "/plugin-manager",
+    enterpriseMeaning: "插件管理",
+    targetModule: "扩展治理 / 能力治理",
+    migrationDecision: "staged",
+    backendContract: "plugin registry、security scan、tenant authorization APIs",
+    exitCriteria: "插件安装、启停、来源、安全扫描和租户授权有明确边界",
+  },
+  {
+    consoleRoute: "dynamic-plugin-routes",
+    enterpriseMeaning: "插件扩展页面",
+    targetModule: "扩展治理",
+    migrationDecision: "staged",
+    backendContract: "extension route registry、RBAC、audit events",
+    exitCriteria: "插件页面进入企业扩展注册、权限和审计体系",
+  },
+]
+
+export function getConsoleMigrationByRoute(
+  route: string,
+): ConsoleMigrationItem | undefined {
+  return consoleMigrationMatrix.find((item) => item.consoleRoute === route)
+}

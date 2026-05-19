@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qwenpaw.fullname" . }}
+  labels:
+    {{- include "qwenpaw.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "qwenpaw.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- include "qwenpaw.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "qwenpaw.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: qwenpaw
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "qwenpaw.fullname" . }}-config
+            - secretRef:
+                name: {{ default (printf "%s-secret" (include "qwenpaw.fullname" .)) .Values.existingSecret }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.probes.startup.path }}
+              port: http
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: working
+              mountPath: {{ .Values.persistence.working.mountPath }}
+            - name: secrets
+              mountPath: {{ .Values.persistence.secrets.mountPath }}
+            - name: backups
+              mountPath: {{ .Values.persistence.backups.mountPath }}
+      volumes:
+        - name: working
+        {{- if .Values.persistence.working.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "qwenpaw.fullname" . }}-working
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: secrets
+        {{- if .Values.persistence.secrets.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "qwenpaw.fullname" . }}-secrets
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: backups
+        {{- if .Values.persistence.backups.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "qwenpaw.fullname" . }}-backups
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

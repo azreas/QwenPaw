@@ -1,0 +1,28 @@
+import { getApiToken } from "./config";
+import { appendCsrfHeader } from "./csrf";
+
+/** Authorization + X-Agent-Id for API requests. Caller sets Content-Type when needed. */
+export function buildAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const token = getApiToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  try {
+    // Read from sessionStorage first (per-tab agent), fall back to localStorage
+    const agentStorage =
+      sessionStorage.getItem("qwenpaw-agent-storage") ||
+      localStorage.getItem("qwenpaw-agent-storage");
+    if (agentStorage) {
+      const parsed = JSON.parse(agentStorage);
+      const selectedAgent = parsed?.state?.selectedAgent;
+      if (selectedAgent) {
+        headers["X-Agent-Id"] = selectedAgent;
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to get selected agent from storage:", error);
+  }
+  appendCsrfHeader(headers);
+  return headers;
+}

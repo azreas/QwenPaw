@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  tag: stable
+
+ingress:
+  enabled: true
+  host: qwenpaw.example.com
+
+env:
+  QWENPAW_STORAGE_BACKEND: postgres
+  QWENPAW_AUTH_ENABLED: "true"
+  QWENPAW_CORS_ALLOW_CREDENTIALS: "true"
+
+existingSecret: qwenpaw-prod-secret
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: "4"
+    memory: 4Gi

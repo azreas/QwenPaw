@@ -1,0 +1,54 @@
+name: Dependency Security
+
+on:
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - "setup.py"
+      - "console/package*.json"
+      - "webchat/package*.json"
+      - "deploy/Dockerfile"
+      - "scripts/security/**"
+      - "tests/unit/security/**"
+      - ".github/dependabot.yml"
+      - "renovate.json"
+      - ".github/workflows/dependency-security.yml"
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+jobs:
+  dependency-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Python dependency audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[security]"
+          python scripts/security/dependency_audit.py
+
+      - name: Console npm audit
+        run: cd console && npm ci && npm audit --audit-level=high
+
+      - name: WebChat npm audit
+        run: cd webchat && npm ci && npm audit --audit-level=high
+
+      - name: Trivy image filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true

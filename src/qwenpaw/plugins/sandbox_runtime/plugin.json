@@ -1,0 +1,9 @@
+{
+    "id": "sandbox-runtime",
+    "name": "sandbox-runtime",
+    "version": "0.1.0",
+    "description": "沙箱运行时扩展插件：为租户提供隔离的执行环境",
+    "entry": {
+        "backend": "plugin.py"
+    }
+}

@@ -1,0 +1,8 @@
+# pip-audit 忽略规则
+# 格式：每行一个漏洞 ID，后跟 # 理由
+# 仅当漏洞无法立即修复且已评估风险时才添加条目
+
+# setuptools: Python 环境自带，非项目直接依赖，升级可能破坏构建工具链
+# PYSEC-2022-43012  # setuptools <65.5.1: 在 build 隔离中执行任意代码
+# PYSEC-2025-49     # setuptools <78.1.1: 通过下载包执行任意代码
+# CVE-2024-6345     # setuptools <70.0.0: 通过 download.func 执行任意代码

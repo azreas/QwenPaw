@@ -1,0 +1,99 @@
+replicaCount: 1
+
+image:
+  repository: agentscope/qwenpaw
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+
+service:
+  type: ClusterIP
+  port: 8088
+
+ingress:
+  enabled: false
+  className: ""
+  host: qwenpaw.local
+  tls: []
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 2Gi
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /ready
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startup:
+    path: /health
+    periodSeconds: 5
+    failureThreshold: 30
+
+env:
+  QWENPAW_WORKING_DIR: /app/working
+  QWENPAW_SECRET_DIR: /app/working.secret
+  QWENPAW_BACKUP_DIR: /app/working.backups
+  QWENPAW_STORAGE_BACKEND: sqlite
+  QWENPAW_CORS_ALLOW_CREDENTIALS: "true"
+  QWENPAW_AUTH_ENABLED: "true"
+
+secretEnv:
+  QWENPAW_DATABASE_URL: ""
+  QWENPAW_REDIS_URL: ""
+  QWENPAW_WEBCHAT_SESSION_SECRET: ""
+  QWENPAW_CORS_ORIGINS: ""
+
+existingSecret: ""
+
+persistence:
+  working:
+    enabled: true
+    size: 20Gi
+    storageClassName: ""
+    mountPath: /app/working
+  secrets:
+    enabled: true
+    size: 2Gi
+    storageClassName: ""
+    mountPath: /app/working.secret
+  backups:
+    enabled: true
+    size: 50Gi
+    storageClassName: ""
+    mountPath: /app/working.backups
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

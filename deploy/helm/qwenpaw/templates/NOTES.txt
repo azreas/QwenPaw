@@ -1,0 +1,6 @@
+QwenPaw has been deployed.
+
+Health:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "qwenpaw.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  curl http://127.0.0.1:{{ .Values.service.port }}/health
+  curl http://127.0.0.1:{{ .Values.service.port }}/ready

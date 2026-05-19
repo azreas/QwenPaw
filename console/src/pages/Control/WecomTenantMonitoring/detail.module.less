@@ -1,0 +1,39 @@
+.page {
+  padding: 0 16px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.detailKpiGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.detailKpi {
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.detailKpi strong,
+.detailKpi span {
+  display: block;
+}
+
+@media (max-width: 960px) {
+  .detailGrid,
+  .detailKpiGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,151 @@
+.enterprise-shell {
+  min-height: 100vh;
+}
+
+.enterprise-shell-sider {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 10;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.enterprise-shell-sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.enterprise-shell-main {
+  margin-left: 240px;
+  transition: margin-left 0.2s ease;
+}
+
+.enterprise-shell-main:has(.ant-layout-sider-collapsed) {
+  margin-left: 64px;
+}
+
+.enterprise-shell-logo {
+  height: 64px;
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+.logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.logo-collapsed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.logo-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.enterprise-shell-menu {
+  border-right: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.enterprise-shell-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.enterprise-shell-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+}
+
+.enterprise-shell-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.enterprise-shell-menu .ant-menu-item {
+  margin: 4px 8px;
+  border-radius: 6px;
+}
+
+.enterprise-shell-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.enterprise-shell-menu .ant-menu-item-selected .ant-menu-title-content {
+  color: white;
+}
+
+.enterprise-shell-menu .ant-menu-item-selected .anticon {
+  color: white;
+}
+
+.enterprise-shell-menu .ant-menu-group-title {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 16px;
+  margin-bottom: 8px;
+}
+
+.enterprise-shell-user-dropdown {
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.enterprise-shell-user-dropdown:hover {
+  background-color: #f5f5f5;
+}
+
+.enterprise-shell-content {
+  padding: 24px;
+  overflow: auto;
+}
+
+@media (max-width: 768px) {
+  .enterprise-shell-sider {
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .enterprise-shell-sider:not(.ant-layout-sider-collapsed) {
+    transform: translateX(0);
+  }
+
+  .enterprise-shell-main {
+    margin-left: 0;
+  }
+}

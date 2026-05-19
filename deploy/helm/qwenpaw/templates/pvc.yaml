@@ -1,0 +1,20 @@
+{{- range $name, $cfg := .Values.persistence }}
+{{- if $cfg.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "qwenpaw.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "qwenpaw.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $cfg.size }}
+  {{- if $cfg.storageClassName }}
+  storageClassName: {{ $cfg.storageClassName }}
+  {{- end }}
+{{- end }}
+{{- end }}
